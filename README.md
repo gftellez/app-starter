@@ -23,14 +23,24 @@ things a library cannot carry anyway.
 
 ## Starting a new app from it
 
-1. Copy the tree, `rm -rf .git`, `git init`.
-2. Rename: `groupId` / `artifactId` / `name` in `pom.xml`, the `com.example.app` package, the
-   names in `deploy/config.sh`, the `server_name` and port in `deploy/nginx/site.conf`.
-3. Fill in `CLAUDE.md` — the `TODO` markers are the questions it asks.
-4. Delete the example: `Note`, `NoteRepository`, `NoteController`, their table in
+The mechanical half is a script, `skill/new-app/scaffold.sh`, driven by the `new-app` skill
+(installed at `~/.claude/skills/new-app`, a symlink to `skill/new-app/` here — so the skill
+is versioned with the template instead of drifting beside it):
+
+```bash
+skill/new-app/scaffold.sh <name> <java-package> <prod-port> <stage-port>
+```
+
+It copies the seed, moves the package, and re-points the pom, `deploy/config.sh`, the env
+examples, the nginx site and the systemd units. It stops before anything that needs
+judgement. By hand, after it:
+
+1. Fill in `CLAUDE.md` — the `TODO` markers are the questions it asks.
+2. Delete the example: `Note`, `NoteRepository`, `NoteController`, their table in
    `V1__baseline.sql`, and `TenantStampIntegrationTest`. Keep the shape; write the
    equivalent test for whatever replaces them.
-5. `cp .env.example .env` and fill it in.
+3. `cp .env.example .env` and fill it in.
+4. Verify: `mvn clean test` and `cd frontend && npm install && npm run build`.
 
 ## Its one weakness
 
