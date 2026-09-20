@@ -1,0 +1,84 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+ * Placeholder design tokens. Every colour is stored as RGB channels (not hex
+ * or named colors) so Tailwind's `/opacity` modifiers keep working
+ * (`bg-accent/5`, `bg-chrome/40`) and so a component never hard-codes a
+ * colour literal — it reads a token, and the token already knows which theme
+ * is active.
+ *
+ * These are placeholder values, not a finished palette — replace them (and
+ * the token names in tailwind.config.ts) with whatever the new app needs
+ * first.
+ */
+@layer base {
+  :root {
+    /* Native controls — select arrows, the date picker, scrollbars — are painted
+       by the browser, so they need to be told which theme they're in. */
+    color-scheme: light;
+
+    --background: 247 248 250;
+    --surface: 255 255 255;
+    --chrome: 18 21 28;
+    --ink: 18 21 28;
+    --ink-soft: 58 65 79;
+    --ink-mute: 138 144 160;
+    --ink-faint: 182 187 199;
+    --rule: 230 232 238;
+    --accent: 27 36 64;
+    --accent-hover: 17 24 52;
+    --pos: 22 112 74;
+    --neg: 150 39 48;
+  }
+
+  :root[data-theme='dark'] {
+    color-scheme: dark;
+
+    --background: 20 22 26;
+    --surface: 27 30 36;
+    --chrome: 14 16 20;
+    --ink: 232 234 238;
+    --ink-soft: 185 191 203;
+    --ink-mute: 135 143 158;
+    --ink-faint: 90 98 114;
+    --rule: 42 47 56;
+    --accent: 62 91 184;
+    --accent-hover: 74 106 203;
+    --pos: 95 191 151;
+    --neg: 241 120 107;
+  }
+
+  body {
+    @apply antialiased text-ink bg-background;
+  }
+  ::selection { @apply bg-accent/10; }
+
+  h1, h2, h3, h4 { @apply font-display; }
+
+  * { scrollbar-width: thin; scrollbar-color: rgb(var(--ink-faint)) transparent; }
+  *::-webkit-scrollbar { width: 8px; height: 8px; }
+  *::-webkit-scrollbar-thumb {
+    background-color: rgb(var(--ink-faint)); border-radius: 9999px;
+    border: 2px solid transparent; background-clip: content-box;
+  }
+  *::-webkit-scrollbar-thumb:hover { background-color: rgb(var(--ink-mute)); }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; }
+  }
+}
+
+@layer components {
+  .card {
+    @apply bg-surface rounded-xl2 border border-rule shadow-card;
+  }
+  .card-interactive {
+    @apply card cursor-pointer transition-all duration-150 hover:border-ink-faint hover:shadow-lift;
+  }
+
+  .eyebrow {
+    @apply font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-mute;
+  }
+}

@@ -1,0 +1,18 @@
+# /etc/systemd/system/app.service — production.
+# Install, then: systemctl daemon-reload && systemctl enable --now app
+[Unit]
+Description=App (production)
+After=network.target postgresql.service
+
+[Service]
+Type=simple
+User=app
+WorkingDirectory=/home/app/dev/app
+EnvironmentFile=/home/app/dev/app/deploy/app.env
+ExecStart=/usr/lib/jvm/jdk-25/bin/java -jar /home/app/dev/app/deploy/app-prod.jar
+SuccessExitStatus=143
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,18 @@
+# /etc/systemd/system/app.service — staging.
+# Install, then: systemctl daemon-reload && systemctl enable --now app
+[Unit]
+Description=App (staging)
+After=network.target postgresql.service
+
+[Service]
+Type=simple
+User=app
+WorkingDirectory=/home/app/dev/app
+EnvironmentFile=/home/app/dev/app/deploy/demo.env
+ExecStart=/usr/lib/jvm/jdk-25/bin/java -jar /home/app/dev/app/deploy/app-stage.jar
+SuccessExitStatus=143
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
