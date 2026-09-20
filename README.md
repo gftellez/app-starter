@@ -23,13 +23,16 @@ things a library cannot carry anyway.
 
 ## Starting a new app from it
 
-The mechanical half is a script, `skill/new-app/scaffold.sh`, driven by the `new-app` skill
-(installed at `~/.claude/skills/new-app`, a symlink to `skill/new-app/` here — so the skill
-is versioned with the template instead of drifting beside it):
+The mechanical half is the `new-app` skill, installed globally at
+`~/.claude/skills/new-app` so it works from any directory:
 
 ```bash
-skill/new-app/scaffold.sh <name> <java-package> <prod-port> <stage-port>
+~/.claude/skills/new-app/scaffold.sh <name> <java-package> <prod-port> <stage-port>
 ```
+
+It lives outside this repository on purpose — one copy, no drift between a tracked version
+and an installed one. It is not backed up by git, so treat `~/.claude/skills/` as something
+worth copying somewhere if the machine matters.
 
 It copies the seed, moves the package, and re-points the pom, `deploy/config.sh`, the env
 examples, the nginx site and the systemd units. It stops before anything that needs
