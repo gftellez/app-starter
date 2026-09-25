@@ -12,12 +12,11 @@ set -euo pipefail
 
 cd "$(dirname "$0")/.."
 source deploy/config.sh
+source deploy/wait-healthy.sh
 
 JAVA_HOME="$JDK_HOME" "$MVN" -B clean package "$@"
 
 cp "target/$ARTIFACT" "deploy/$STAGE_JAR.new"
 mv -f "deploy/$STAGE_JAR.new" "deploy/$STAGE_JAR"
 
-kill "$(systemctl show "$STAGE_SERVICE" --property=MainPID --value)"
-echo "Staging restarting. Shutdown is graceful and takes 10–15s — poll for a new PID and"
-echo "an HTTP 200 before concluding anything failed."
+restart_and_wait "$STAGE_SERVICE" "$STAGE_PORT"

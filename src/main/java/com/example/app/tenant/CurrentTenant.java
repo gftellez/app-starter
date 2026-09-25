@@ -36,6 +36,17 @@ public final class CurrentTenant {
         return explicit != null ? explicit : fallback.get();
     }
 
+    /**
+     * Whether the row belongs to the tenant this work is for. Every lookup by an id that came
+     * from a request goes through this: an id is a string the caller chose, and without the
+     * check one tenant can read or edit another's row by guessing or reusing it. With a single
+     * tenant the gap is invisible, which is exactly why it has to be there from the start.
+     */
+    public static boolean owns(TenantOwned row) {
+        return row != null && row.getTenant() != null
+                && row.getTenant().getId().equals(require().getId());
+    }
+
     public static Tenant require() {
         Tenant tenant = get();
         if (tenant == null) {

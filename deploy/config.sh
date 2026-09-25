@@ -7,6 +7,10 @@ PROD_JAR=app-prod.jar
 STAGE_SERVICE=app-demo.service
 PROD_SERVICE=app.service
 
+# What each one listens on — the deploy scripts poll /api/health there.
+STAGE_PORT=8083
+PROD_PORT=8082
+
 # The system java is usually older than the app needs; point at the JDK that builds it.
 JDK_HOME=${JDK_HOME:-/usr/lib/jvm/jdk-25}
 MVN=${MVN:-mvn}

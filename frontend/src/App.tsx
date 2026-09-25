@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { parseUrl, buildUrl, type View } from '@/lib/urlState'
+import { NotesView } from '@/components/views/NotesView'
 
 /**
  * Minimal shell: the active view is read from (and written back to) the URL,
@@ -42,8 +43,8 @@ export default function App() {
       <main className="mx-auto max-w-3xl px-4 py-8">
         {view === 'home' && (
           <div className="card p-6">
-            <h1 className="text-xl font-semibold mb-2">Home</h1>
-            <p className="text-ink-soft text-sm">Replace this view with the app's first real screen.</p>
+            <h1 className="text-xl font-semibold mb-2">Notes</h1>
+            <NotesView />
           </div>
         )}
         {view === 'about' && (

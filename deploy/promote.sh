@@ -7,6 +7,7 @@ set -euo pipefail
 
 cd "$(dirname "$0")/.."
 source deploy/config.sh
+source deploy/wait-healthy.sh
 
 if [[ ! -f "deploy/$STAGE_JAR" ]]; then
   echo "!! deploy/$STAGE_JAR does not exist — deploy to staging first" >&2
@@ -19,5 +20,4 @@ read -r -p "Promote deploy/$STAGE_JAR to production? [y/N] " answer
 cp "deploy/$STAGE_JAR" "deploy/$PROD_JAR.new"
 mv -f "deploy/$PROD_JAR.new" "deploy/$PROD_JAR"
 
-kill "$(systemctl show "$PROD_SERVICE" --property=MainPID --value)"
-echo "Production restarting. Check it answers before walking away."
+restart_and_wait "$PROD_SERVICE" "$PROD_PORT"

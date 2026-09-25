@@ -23,6 +23,13 @@ before reporting, so you raise what is new rather than what is closed.
 - **Tenant isolation (if multi-tenant)** — `tenant_id` is stamped and filtered in code; there is
   no database-level row-level security yet (that would be a DBA task). A query missing its scope is
   a cross-tenant read, and that is a critical finding.
+- **Webhooks** — the signature must be checked over the raw body, in constant time, with a
+  timestamp window — and a request with *no* signature must be refused, not waved through.
+  Check the header name against the provider's docs: an app once verified a header its payment
+  provider never sent, so every forged "purchase" was accepted.
+- **Model tools that write** — a model should never hold a SQL-writing tool; text guards on SQL are
+  pattern matches (`WHERE true` passes "WHERE required"). Look for typed tools and a READ ONLY
+  transaction around any SQL the model can run.
 - **Secrets** — tokens and passwords live in `.env` and deployment config files, which are not in
   git. Report a secret that has reached a tracked file, a log line, or a prompt. **Never print a
   secret's value** — name the file and the variable instead.

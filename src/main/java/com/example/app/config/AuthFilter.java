@@ -30,7 +30,9 @@ public class AuthFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain chain) throws ServletException, IOException {
-        if (!request.getRequestURI().startsWith("/api/")) {
+        // The health check answers without a token: deploy scripts and uptime monitors call it,
+        // and it says nothing beyond "up, and the database answers".
+        if (!request.getRequestURI().startsWith("/api/") || request.getRequestURI().equals("/api/health")) {
             chain.doFilter(request, response);
             return;
         }

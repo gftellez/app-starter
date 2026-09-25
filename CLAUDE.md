@@ -65,6 +65,21 @@ These are here because breaking them produces a bug that does not look like the 
 - **Colours come from theme tokens**, never hard-coded, or one of the two themes breaks.
 - **Query keys carry every parameter the query depends on**, and a mutation invalidates what
   it changed — otherwise the screen shows stale data and lies convincingly.
+- **Every lookup by an id from a request goes through `CurrentTenant.owns`** (see
+  `NoteController.get`). An id is a string the caller chose; without the check one tenant reads or
+  edits another's row. Answer 404, not 403 — from there, it does not exist.
+- **Outbound HTTP goes through the injected `RestClient.Builder`** (`HttpClientConfig`), which has a
+  connect and a read timeout. Never `.block()` or call out without one, and **never call out from
+  inside a `@Transactional` method**: a hung upstream then holds a request thread *and* a database
+  connection, and a handful of those take the whole app down.
+- **Webhooks are refused unless signed.** Verify the provider's signature over the **raw request
+  body** (take `@RequestBody String`, not a parsed map), compare in constant time
+  (`MessageDigest.isEqual`), reject stale timestamps, and treat a *missing* signature as a failure —
+  not as a reason to skip the check. Read the provider's docs for the exact header: a real app
+  verified a header its provider never sent, and so trusted every request.
+- **Jackson 3 ignores fields it does not know**, silently. A client that sends `categoryName` to an
+  endpoint expecting `categoryId` gets a 200 and no change. Keep write DTOs consistent with each
+  other, or accept both spellings deliberately.
 - **Things with history are archived, never deleted.** Deleting a row that others reference
   orphans them or quietly changes what past totals add up to.
 
@@ -111,9 +126,21 @@ are tracked. A token that reaches a tracked file has to be rotated, not deleted.
 
 - `AuthFilter` is one shared token compared in constant time. It is a door lock, not
   sign-in: it proves the caller knows a secret, not who they are.
+- The app refuses to start with the `changeme` placeholder token or database password
+  (`DefaultSecretsCheck`): a missing env variable must be loud, not a guessable token in production.
 - TODO — if this app sends model-generated input anywhere that executes it (SQL, a shell, an
   HTTP call), describe the guards here and treat that as the highest-risk surface in the
   repo. Anything a user or a document can write into a prompt is attacker-controlled text.
+
+  What a real app on this stack learned the hard way, if it has an LLM agent:
+  - **Never give the model a tool that writes SQL.** Text guards on SQL are pattern matches
+    (`WHERE true` passed a "WHERE required" rule). Give it typed tools — `record_expense(account,
+    amount, …)` — whose fields go through the same code path as the rest of the app.
+  - **Run its read-only SQL inside a READ ONLY transaction**, so the database refuses a write
+    that gets past the text check (a `SELECT` calling a writing function does).
+  - **Tell the user what the tools did, not what the model says.** Replayed history teaches a
+    model to answer "recorded" without calling anything; build the reply from the tools' own
+    results, and challenge a claim of a write that no tool made.
 
 ## Working style
 
@@ -125,6 +152,9 @@ costs more than it saves.
 
 **Never delegate:** production data, deploys and service restarts, security changes, and
 design calls someone is paying for judgement on.
+
+When delegating to a general-purpose agent, say "do this yourself — do not spawn other agents":
+one handed its task to sub-agents and came back with nothing but "waiting for them".
 
 TODO — name this app's equivalent of "production data": the thing a cold agent must never
 touch because the damage would be silent.

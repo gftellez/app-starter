@@ -17,6 +17,10 @@ whatever you must read to judge it.
   in a controller with no `@Transactional` throws, and the endpoint answers 500. Flag every new
   association read on a request path.
 - **N+1** — a loop that reads an association per row wants an `@EntityGraph` or a fetch join.
+- **By-id lookups without the tenant check** — a `findById` on an id from the request that does not
+  go through `CurrentTenant.owns` lets one tenant read or edit another's row.
+- **Outbound HTTP without a timeout, or inside `@Transactional`** — a hung upstream then holds a
+  request thread and a database connection; enough of them take the app down.
 - **Tenant scoping (if multi-tenant)** — a query or a repository call that does not scope by
   tenant (or organization, or workspace) reads across boundaries.
 - **TanStack Query** — a query key that omits a parameter the query depends on serves stale data;

@@ -2,11 +2,13 @@ package com.example.app.example;
 
 import com.example.app.tenant.CurrentTenant;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 /**
  * The example endpoint. Delete it along with {@link Note}.
@@ -34,6 +36,29 @@ public class NoteController {
                         "text", n.getText(),
                         "createdAt", n.getCreatedAt()))
                 .toList();
+    }
+
+    /**
+     * The by-id pattern every owned entity copies: look it up, then check it is this tenant's.
+     * Another tenant's id answers 404, not 403 — from here, it does not exist.
+     */
+    @GetMapping("/{id}")
+    @Transactional(readOnly = true)
+    public ResponseEntity<Map<String, Object>> get(@PathVariable UUID id) {
+        return notes.findById(id)
+                .filter(CurrentTenant::owns)
+                .map(n -> ResponseEntity.ok(Map.<String, Object>of(
+                        "id", n.getId(), "text", n.getText(), "createdAt", n.getCreatedAt())))
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    @DeleteMapping("/{id}")
+    @Transactional
+    public ResponseEntity<Void> delete(@PathVariable UUID id) {
+        var note = notes.findById(id).filter(CurrentTenant::owns);
+        if (note.isEmpty()) return ResponseEntity.notFound().build();
+        notes.delete(note.get());
+        return ResponseEntity.noContent().build();
     }
 
     @PostMapping

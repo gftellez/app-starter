@@ -12,12 +12,13 @@ things a library cannot carry anyway.
 | | |
 |---|---|
 | `pom.xml` | Java 25, Boot 4, Flyway's three artifacts, Lombok as an explicit processor path, the React build wired into `package` |
-| `deploy/` | two environments, the promote-don't-rebuild flow, the two database roles, systemd units, an nginx site |
+| `deploy/` | two environments, the promote-don't-rebuild flow, deploys that wait for `/api/health`, nightly backups, the two database roles, systemd units, an nginx site |
+| `.github/workflows/ci.yml` | the full build and every test, against a real PostgreSQL, on every push |
+| `config/` | the shared token (constant-time), a refusal to start on placeholder secrets, an HTTP client with timeouts |
 | `src/main/java/.../tenant/` | the multi-tenant pattern: an interface, a stamping listener, a context that refuses to guess |
-| `src/main/java/.../config/AuthFilter.java` | one shared token, compared in constant time |
 | `src/main/java/.../error/` | exceptions to JSON, with server errors kept vague on purpose |
 | `src/test/.../BaseIntegrationTest.java` | Testcontainers against a real PostgreSQL, non-transactional on purpose |
-| `frontend/` | Vite + TS + Tailwind, URL-as-state, themed tokens, dialogs portalled to the body |
+| `frontend/` | Vite + TS + Tailwind, URL-as-state, themed tokens, dialogs portalled to the body, an error state that never looks like "empty" |
 | `.claude/agents/` | ten subagents scoped to this stack |
 | `CLAUDE.md` | the template a new app fills in |
 
@@ -40,8 +41,9 @@ judgement. By hand, after it:
 
 1. Fill in `CLAUDE.md` — the `TODO` markers are the questions it asks.
 2. Delete the example: `Note`, `NoteRepository`, `NoteController`, their table in
-   `V1__baseline.sql`, and `TenantStampIntegrationTest`. Keep the shape; write the
-   equivalent test for whatever replaces them.
+   `V1__baseline.sql`, `NotesView.tsx`, and `TenantStampIntegrationTest`. Keep the shape, and
+   write the equivalent tests for whatever replaces them — the stamp, the 404 for another
+   tenant's id, and the health check.
 3. `cp .env.example .env` and fill it in.
 4. Verify: `mvn clean test` and `cd frontend && npm install && npm run build`.
 
